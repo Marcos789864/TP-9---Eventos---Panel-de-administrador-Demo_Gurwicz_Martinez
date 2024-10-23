@@ -24,7 +24,7 @@ const CargarEvento = ({ route, navigation }) => {
   const [locations, setLocations] = useState([]);
   const [errors, setErrors] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
-  const [successModalVisible, setSuccessModalVisible] = useState(false); // New state for success modal
+  const [successModalVisible, setSuccessModalVisible] = useState(false); 
 
   useEffect(() => {
     const fetchCategories = async () => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import userApi from '../api/userApi';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Login = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -11,7 +11,8 @@ const Login = ({ navigation }) => {
     try {
       const result = await userApi.user_login(username, password);
       if (result.status === 200) {
-        const token = result.data.token; // Suponiendo que el token está en result.data.token
+        const token = result.data.token;
+        await AsyncStorage.setItem("storedToken",token)
         navigation.navigate('Home', { token });
       } else {
         Alert.alert('Error', 'Usuario o contraseña incorrecta');

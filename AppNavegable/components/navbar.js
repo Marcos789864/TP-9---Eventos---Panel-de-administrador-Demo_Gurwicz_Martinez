@@ -1,22 +1,17 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; 
 
 const Navbar = () => {
 
+  const navigation = useNavigation();
   return (
-    <div style={styles.navbar}>
-      <div style={styles.logoContainer}>
-       
-      </div>
-      <div style={styles.navItems}>
-        <Link style={styles.navItem} to="/productos">Productos</Link>
-        <Link style={styles.navItem} to="/contacto">Contacto</Link>
-        </div>
-      </div>
 
+    <View style={styles.navbar}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("aplicarEvento")}><Text style={styles.navItem}>Inscripciones</Text> </TouchableOpacity>
+    </View>
   );
 };
-const styles = {
+const styles = StyleSheet.create( {
     navbar: {
       display: 'flex',
       justifyContent: 'space-between',
@@ -51,6 +46,6 @@ const styles = {
       borderRadius: '4px',
       transition: 'background-color 0.3s',
     },
-  };
+  });
   
   export default Navbar;

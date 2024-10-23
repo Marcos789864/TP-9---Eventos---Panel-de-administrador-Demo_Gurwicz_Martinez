@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import eventsApi from '../api/eventsApi';
 import { useNavigation } from '@react-navigation/native'; 
+import Navbar from '../components/navbar';
 import moment from 'moment'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const decodeTokenManual = (token) => {
   try {
@@ -29,7 +32,7 @@ const Home = ({ route }) => {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation(); 
 
-  useEffect(() => {
+  useEffect( () => {
     if (token) {
       const decodedUser = decodeTokenManual(token);
       setUser(decodedUser);
@@ -37,40 +40,35 @@ const Home = ({ route }) => {
     
     const fetchEvents = async () => {
       try {
-        const response = await eventsApi.get_Events();
-        console.log('Response:', response); 
-    
-        const eventsArray = Array.isArray(response.data) ? response.data : [];
-        
-        const currentDate = moment()
-        const filteredEvents = eventsArray.filter(event => {
-          const eventDate = moment(event.start_date);
-          return eventDate.isAfter(currentDate, 'day') || eventDate.isSame(currentDate, 'day'); 
-        });
-    
-        setEvents(filteredEvents);
+          const response = await eventsApi.get_Events();
+          console.log('Response:', response); 
+  
+          const eventsArray = Array.isArray(response.data) ? response.data : [];
+          const currentDate = moment();
+          const filteredEvents = eventsArray.filter(event => {
+              const eventDate = moment(event.start_date);
+              return eventDate.isAfter(currentDate, 'day') || eventDate.isSame(currentDate, 'day'); 
+          });
+  
+  
+          await AsyncStorage.setItem('filteredEvents', JSON.stringify(filteredEvents));
+  
+          setEvents(filteredEvents);
       } catch (error) {
-        console.error('Failed to fetch events:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+          console.error('Failed to fetch events:', error);
+      } 
+  };
     
     fetchEvents();;
   }, [token]);
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#007BFF" />
-      </View>
-    );
-  }
+  
 
   return (
     <View style={styles.container}>
+     
       <Text style={styles.title}>Bienvenido, {user.username}!</Text>
-    
+    <Navbar></Navbar>
       <FlatList
         data={events}
         keyExtractor={(item) => item.id.toString()}
