@@ -12,8 +12,21 @@ const aplicarEvento = () =>
         try {
             const async = await AsyncStorage.getItem('filteredEvents');
             if (async != null) {
-                setFilteredEvents(JSON.parse(async));
-            }
+              const events = JSON.parse(async);
+       
+              const validatedEvents = await Promise.all(events.map(async (events) => {
+                const isValid = await eventsApi.getMaxCapacity(parseInt(events.id_event_location));
+                if (isValid == true)
+                {
+                  return async;
+                }
+                else 
+                return null
+              }));
+  
+              const filteredValidEvents = validatedEvents.filter(event => event !== null);
+              setFilteredEvents(filteredValidEvents);
+          }
         } catch (e) {
             console.error("Error al leer los eventos filtrados:", e);
         }

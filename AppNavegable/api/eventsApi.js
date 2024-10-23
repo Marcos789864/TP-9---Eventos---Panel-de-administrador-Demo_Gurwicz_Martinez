@@ -63,8 +63,28 @@ const create_Events = async (data, token) => {
     }
   }
 
+  const getMaxCapacity = async (token, idLocation) =>
+  {
+    const headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+      "ngrok-skip-browser-warning": true,  
+    };
+  const data = {}
+    console.log("TOKEN:", token);
+  
+    try {
+      const result = await apiManager('POST', headers, data, `event/${idLocation}`);
+      console.log(result);
+      return result;
+    } catch (error) {
+      console.error('Error en la solicitud:', error);
+      return { error: error.message };
+    }
+  }
 
 
 
 
-export default { get_Events,create_Events, enrollment_event};
+
+export default { get_Events,create_Events, enrollment_event, getMaxCapacity};
