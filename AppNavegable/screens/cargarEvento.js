@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, Picker, Switch, Alert, Modal
 import categoryApi from '../api/categoryApi';
 import locationsApi from '../api/locationsApi';
 import eventsApi from '../api/eventsApi';
-import Home from './home';
+
 
 const CargarEvento = ({ route, navigation }) => {
   const { token } = route.params;
@@ -36,7 +36,6 @@ const CargarEvento = ({ route, navigation }) => {
       }
     };
 
-  
     const fetchLocations = async () => {
       try {
         const response = await locationsApi.get_Locations(token);
