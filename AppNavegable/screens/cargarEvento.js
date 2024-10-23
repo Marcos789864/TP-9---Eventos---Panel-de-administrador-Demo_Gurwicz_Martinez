@@ -3,8 +3,9 @@ import { View, Text, TextInput, Button, StyleSheet, Picker, Switch, Alert, Modal
 import categoryApi from '../api/categoryApi';
 import locationsApi from '../api/locationsApi';
 import eventsApi from '../api/eventsApi';
+import Home from './home';
 
-const CargarEvento = ({ route }) => {
+const CargarEvento = ({ route, navigation }) => {
   const { token } = route.params;
   const [form, setForm] = useState({
     name: '',
@@ -17,7 +18,6 @@ const CargarEvento = ({ route }) => {
     enabled_for_enrollment: false,
     max_assistance: '',
     id_creator_user: '',
-    tags: [],
   });
 
   const [categories, setCategories] = useState([]);
@@ -66,7 +66,7 @@ const CargarEvento = ({ route }) => {
     if (!form.price || isNaN(form.price) || form.price <= 0) newErrors.price = 'Price must be a positive number';
     if (!form.max_assistance || isNaN(form.max_assistance) || form.max_assistance <= 0)
       newErrors.max_assistance = 'Max assistance must be a positive number';
-    if (!form.id_creator_user || isNaN(form.id_creator_user)) newErrors.id_creator_user = 'Creator user ID is required';
+    if (!form.id_creator_user || isNaN(form.id_creator_user)) newErrors.id_creator_user = 'Creator user ID is required' ;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -81,6 +81,7 @@ const CargarEvento = ({ route }) => {
 
   const handleConfirm = async () => {
     try {
+      console.log( typeof(form.id_creator_user))
       const response = await eventsApi.create_Events(form, token);
       console.log('Event creation response:', response);
       setModalVisible(false);
@@ -101,6 +102,10 @@ const CargarEvento = ({ route }) => {
 
   return (
     <View style={styles.container}>
+     <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("Home", { token })}>
+  <Text style={styles.backButtonText}>Back</Text>
+</TouchableOpacity>
+
       <Text style={styles.title}>Event Form</Text>
 
       <Text>Name:</Text>
@@ -127,7 +132,7 @@ const CargarEvento = ({ route }) => {
       >
         <Picker.Item label="Select a category" value="" />
         {categories.map((category) => (
-          <Picker.Item key={category.id} label={category.name} value={category.id} />
+          <Picker.Item key={category.id} label={category.name} value={ parseInt(category.id)} />
         ))}
       </Picker>
       {errors.id_event_category && <Text style={styles.error}>{errors.id_event_category}</Text>}
@@ -159,7 +164,7 @@ const CargarEvento = ({ route }) => {
         style={styles.input}
         keyboardType="numeric"
         value={form.duration_in_minutes}
-        onChangeText={(text) => handleInputChange('duration_in_minutes', text)}
+        onChangeText={(text) => handleInputChange('duration_in_minutes',  text ? parseInt(text, 10) : '')}
       />
       {errors.duration_in_minutes && <Text style={styles.error}>{errors.duration_in_minutes}</Text>}
 
@@ -168,7 +173,7 @@ const CargarEvento = ({ route }) => {
         style={styles.input}
         keyboardType="numeric"
         value={form.price}
-        onChangeText={(text) => handleInputChange('price', text)}
+        onChangeText={(value) => handleInputChange('price',  value ? parseInt(value, 10) : '')}
       />
       {errors.price && <Text style={styles.error}>{errors.price}</Text>}
 
@@ -183,7 +188,7 @@ const CargarEvento = ({ route }) => {
         style={styles.input}
         keyboardType="numeric"
         value={form.max_assistance}
-        onChangeText={(text) => handleInputChange('max_assistance', text)}
+        onChangeText={(value) => handleInputChange('max_assistance',  value ? parseInt(value, 10) : '' )}
       />
       {errors.max_assistance && <Text style={styles.error}>{errors.max_assistance}</Text>}
 
@@ -192,7 +197,7 @@ const CargarEvento = ({ route }) => {
         style={styles.input}
         keyboardType="numeric"
         value={form.id_creator_user}
-        onChangeText={(text) => handleInputChange('id_creator_user', text)}
+        onChangeText={(value) => handleInputChange('id_creator_user', value ? parseInt(value, 10) : '')}
       />
       {errors.id_creator_user && <Text style={styles.error}>{errors.id_creator_user}</Text>}
 
@@ -309,6 +314,19 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: 'white',
     fontSize: 16,
+  },
+  backButton: {
+    backgroundColor: '#007bff',
+    borderRadius: 5,            
+    padding: 10,                
+    alignItems: 'center',       
+    marginBottom: 20,           
+  },
+  
+  backButtonText: {
+    color: 'white',             
+    fontSize: 16,               
+    fontWeight: 'bold',         
   },
 });
 

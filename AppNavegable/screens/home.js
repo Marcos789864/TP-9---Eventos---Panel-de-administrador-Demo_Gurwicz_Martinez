@@ -39,11 +39,15 @@ const Home = ({ route }) => {
       try {
         const response = await eventsApi.get_Events();
         console.log('Response:', response); 
-        const eventsArray = Array.isArray(response) ? response : response.events || [];
-        const filteredEvents = eventsArray.filter(event => 
-          moment(event.date).isSameOrAfter(moment(), 'day')
-        );
-
+    
+        const eventsArray = Array.isArray(response.data) ? response.data : [];
+        
+        const currentDate = moment()
+        const filteredEvents = eventsArray.filter(event => {
+          const eventDate = moment(event.start_date);
+          return eventDate.isAfter(currentDate, 'day') || eventDate.isSame(currentDate, 'day'); 
+        });
+    
         setEvents(filteredEvents);
       } catch (error) {
         console.error('Failed to fetch events:', error);
@@ -51,8 +55,8 @@ const Home = ({ route }) => {
         setLoading(false);
       }
     };
-
-    fetchEvents();
+    
+    fetchEvents();;
   }, [token]);
 
   if (loading) {
