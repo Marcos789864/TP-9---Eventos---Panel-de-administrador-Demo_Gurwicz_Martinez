@@ -3,46 +3,77 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import eventsApi from '../api/eventsApi';
 import { View, Text, StyleSheet,FlatList, TouchableOpacity } from 'react-native';
 
-const aplicarEvento = () =>
+const aplicarEvento = ( {route}) =>
 {
+  const { token } = route.params;
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [form, setform] = useState([]);
 
-    const getFilteredEvents = async () => {
-        try {
-            const async = await AsyncStorage.getItem('filteredEvents');
-            if (async != null) {
-              const events = JSON.parse(async);
-       
-              const validatedEvents = await Promise.all(events.map(async (events) => {
-                const isValid = await eventsApi.getMaxCapacity(parseInt(events.id_event_location));
-                if (isValid == true)
-                {
-                  return async;
-                }
-                else 
-                return null
-              }));
-  
-              const filteredValidEvents = validatedEvents.filter(event => event !== null);
-              setFilteredEvents(filteredValidEvents);
-          }
-        } catch (e) {
-            console.error("Error al leer los eventos filtrados:", e);
+   
+   
+   
+    const decodeTokenManual = (token) => {
+      try {
+        const [header, payload, signature] = token.split('.');
+        
+        if (!payload) {
+          throw new Error('Invalid token');
         }
+        const base64Url = payload.replace(/_/g, '/').replace(/-/g, '+');
+        const base64 = atob(base64Url);
+        const user = JSON.parse(base64);
+        return user;
+      } catch (error) {
+        console.error('Manual token decoding error:', error);
+        return null;
+      }
+    };
+
+   
+      
+
+    const getFilteredEvents = async () => {
+      try {
+        const async = await AsyncStorage.getItem('filteredEvents');
+        
+        if (async != null) {
+
+          const events = JSON.parse(async);
+          console.log("Eventos:", events);  
+          const validatedEvents = await Promise.all(events.map(async (event) => {
+            console.log("Validando evento:", event.name); 
+            try {
+              const isValid = await eventsApi.getMaxCapacity(parseInt(event.id_event_location));
+              return isValid ? event : null; 
+            } catch (error) {
+              console.error(`Error validando evento ${event.name}:`, error);
+              return null; 
+            }
+          }));
+          const filteredValidEvents = validatedEvents.filter(event => event !== null);
+          console.log("Eventos validados y filtrados:", filteredValidEvents);
+          setFilteredEvents(filteredValidEvents);
+        } else {
+          console.warn("No se encontraron eventos en AsyncStorage");
+        }
+      } catch (e) {
+        console.error("Error al leer los eventos filtrados:", e);
+      }
     };
 
     useEffect(() => {
         getFilteredEvents();
     }, []);
+  
 
     const applyforEvent = async (idEvent) =>
     {
         const storedToken = await AsyncStorage.getItem("storedToken");
-
+        console.log("evento id" + idEvent);
+      const user = decodeTokenManual(token);
         try
         {
-            const response = await eventsApi.enrollment_event(storedToken,idEvent);
+            const response = await eventsApi.enrollment_event(storedToken,idEvent,user.id);
             console.log(response);
         }
         catch(e)

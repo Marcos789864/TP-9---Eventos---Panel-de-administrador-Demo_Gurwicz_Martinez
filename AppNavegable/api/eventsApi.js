@@ -43,7 +43,7 @@ const create_Events = async (data, token) => {
     }
   };
 
-  const enrollment_event = async (token,eventid) =>
+  const enrollment_event = async (token,eventid,userid) =>
   {
     const headers = {
       "Content-Type": "application/json",
@@ -54,7 +54,7 @@ const create_Events = async (data, token) => {
     console.log("TOKEN:", token);
   
     try {
-      const result = await apiManager('POST', headers, data, `event/${eventid}/enrollment`);
+      const result = await apiManager('POST', headers, data, `event/${eventid}/${userid}/enrollment`);
       console.log(result);
       return result;
     } catch (error) {
@@ -82,9 +82,61 @@ const create_Events = async (data, token) => {
       return { error: error.message };
     }
   }
+  const getAll_Events = async () => {
+    const headers = {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": true,  
+    };
+    const data = {}
+    try {
+      console.log
+      const result = await apiManager('GET', headers, data, 'event/getAll');
+      console.log(result);
+      return result;
+    } catch (error) {
+      console.error('Error en la solicitud:', error);
+      return { error: error.message };
+    }
+  };
+  
+
+  const updateEvent = async (token,data) => {
+    const headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+      "ngrok-skip-browser-warning": true,  
+    };
+    console.log("data" + JSON.stringify(data));
+    try {
+      console.log
+      const result = await apiManager('PATCH', headers, data, 'event');
+      console.log(result);
+      return result;
+    } catch (error) {
+      console.error('Error en la solicitud:', error);
+      return { error: error.message };
+    }
+  };
+
+  const eventDetail = async (token,data) => {
+    const headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+      "ngrok-skip-browser-warning": true,  
+    };
+    console.log("data" + JSON.stringify(data));
+    try {
+      console.log
+      const result = await apiManager('GET', headers, data, 'event/getDetail');
+      console.log(result);
+      return result;
+    } catch (error) {
+      console.error('Error en la solicitud:', error);
+      return { error: error.message };
+    }
+  };
 
 
 
 
-
-export default { get_Events,create_Events, enrollment_event, getMaxCapacity};
+export default { get_Events,create_Events, enrollment_event, getMaxCapacity,getAll_Events, updateEvent,eventDetail};

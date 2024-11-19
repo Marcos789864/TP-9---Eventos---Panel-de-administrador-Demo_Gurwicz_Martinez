@@ -49,17 +49,14 @@ const Home = ({ route }) => {
               const eventDate = moment(event.start_date);
               return eventDate.isAfter(currentDate, 'day') || eventDate.isSame(currentDate, 'day'); 
           });
-  
-  
           await AsyncStorage.setItem('filteredEvents', JSON.stringify(filteredEvents));
-  
           setEvents(filteredEvents);
       } catch (error) {
           console.error('Failed to fetch events:', error);
       } 
   };
     
-    fetchEvents();;
+    fetchEvents();
   }, [token]);
 
   
@@ -68,7 +65,7 @@ const Home = ({ route }) => {
     <View style={styles.container}>
      
       <Text style={styles.title}>Bienvenido, {user.username}!</Text>
-    <Navbar></Navbar>
+      <Navbar></Navbar>
       <FlatList
         data={events}
         keyExtractor={(item) => item.id.toString()}
@@ -86,6 +83,12 @@ const Home = ({ route }) => {
           onPress={() => navigation.navigate('CargarEvento', { token })} 
         >
           <Text style={styles.addButtonText}>+</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.applyButton}
+          onPress={() => navigation.navigate('aplicarEvento', { token })} 
+        >
+          <Text style={styles.applyButtonText}>Aplicar Evento</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -126,7 +129,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 20,
-    marginBottom: 20, 
     alignSelf: 'center', 
     position: 'relative', 
   },
@@ -141,10 +143,28 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
+    marginBottom: 20,
   },
   addButtonText: {
     color: '#fff',
     fontSize: 30,
+    fontWeight: 'bold',
+  },
+  applyButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    backgroundColor: '#28A745',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  applyButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

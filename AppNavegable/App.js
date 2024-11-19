@@ -7,7 +7,8 @@ import Login from './screens/login';
 import Register from './screens/Register';
 import CargarEvento from './screens/cargarEvento';
 import aplicarEvento from './screens/aplicarEvento';
-
+import adminPage from './screens/adminPage';
+import editarEvento from './screens/editarEventos';
 
 const Stack = createStackNavigator();
 
@@ -21,6 +22,8 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="CargarEvento" component={CargarEvento} />
         <Stack.Screen name="aplicarEvento" component={aplicarEvento} />
+        <Stack.Screen  name="adminPage" component={adminPage} />
+        <Stack.Screen name= "editarEvento" component={editarEvento} />
       </Stack.Navigator>
     </NavigationContainer>
   );}

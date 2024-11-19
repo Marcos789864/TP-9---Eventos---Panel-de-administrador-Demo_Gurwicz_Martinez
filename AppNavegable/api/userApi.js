@@ -5,6 +5,9 @@ const user_login = async (Username,Password) => {
     "Content-Type": "application/json",
     "ngrok-skip-browser-warning": true,  
   };
+
+  console.log("user antes de enviar" + Username);
+  console.log("contraseña antes de enviar" + Password);
   const data =
   {
     username: Username,

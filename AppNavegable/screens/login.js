@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import userApi from '../api/userApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const Login = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -9,11 +10,32 @@ const Login = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
+      console.log("username" + username);
+      console.log("password" + password);
       const result = await userApi.user_login(username, password);
       if (result.status === 200) {
         const token = result.data.token;
-        await AsyncStorage.setItem("storedToken",token)
+        console.log("token" + token);
+        await AsyncStorage.setItem("storedToken", token);
         navigation.navigate('Home', { token });
+      } else {
+        Alert.alert('Error', 'Usuario o contraseña incorrecta');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrorMessage('Error de login');
+    }
+  };
+  const handleLoginAdmin = async () => {
+    try {
+      console.log("username" + username);
+      console.log("password" + password);
+      const result = await userApi.user_login(username, password);
+      if (result.status === 200) {
+        const token = result.data.token;
+        console.log("token" + token);
+        await AsyncStorage.setItem("storedToken", token);
+        navigation.navigate('adminPage', { token });
       } else {
         Alert.alert('Error', 'Usuario o contraseña incorrecta');
       }
@@ -45,6 +67,12 @@ const Login = ({ navigation }) => {
         <Text style={styles.registerText}>¿No tienes cuenta?</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Register')}>
           <Text style={styles.registerLink}> Regístrate</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.adminContainer}>
+        <TouchableOpacity style={styles.adminButton} onPress={handleLoginAdmin}>
+          <Text style={styles.adminButtonText}>Ir a Admin</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -90,6 +118,22 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     marginTop: 10,
+  },
+  adminContainer: {
+    marginTop: 20,
+    width: '100%',
+    alignItems: 'center',
+  },
+  adminButton: {
+    backgroundColor: '#28a745',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  adminButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
