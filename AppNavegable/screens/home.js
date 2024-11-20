@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import eventsApi from '../api/eventsApi';
 import { useNavigation } from '@react-navigation/native'; 
-import Navbar from '../components/navbar';
 import moment from 'moment'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -64,8 +63,7 @@ const Home = ({ route }) => {
   return (
     <View style={styles.container}>
      
-      <Text style={styles.title}>Bienvenido, {user.username}!</Text>
-      <Navbar></Navbar>
+      <Text style={styles.title}>Eventos</Text>
       <FlatList
         data={events}
         keyExtractor={(item) => item.id.toString()}

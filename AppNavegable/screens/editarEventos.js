@@ -107,7 +107,7 @@ const EditarEvento = ({ route, navigation }) => {
 
       <Text style={styles.title}>Edit Event</Text>
       
-      {/* Name */}
+  
       <Text style={styles.label}>Name:</Text>
       <TextInput
         style={styles.input}

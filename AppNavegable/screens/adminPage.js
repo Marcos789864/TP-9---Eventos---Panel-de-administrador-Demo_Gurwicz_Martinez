@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import eventsApi from '../api/eventsApi';
 import { useNavigation } from '@react-navigation/native'; 
-import Navbar from '../components/navbar';
-import moment from 'moment'; 
+import moment from 'moment';
 
 const decodeTokenManual = (token) => {
   try {
     const [header, payload, signature] = token.split('.');
-    
-    if (!payload) {
-      throw new Error('Invalid token');
-    }
-
+    if (!payload) throw new Error('Token inválido');
     const base64Url = payload.replace(/_/g, '/').replace(/-/g, '+');
     const base64 = atob(base64Url);
     const user = JSON.parse(base64);
     return user;
   } catch (error) {
-    console.error('Manual token decoding error:', error);
+    console.error('Error al decodificar el token manualmente:', error);
     return null;
   }
 };
@@ -28,14 +23,22 @@ const adminPage = ({ route }) => {
   const [user, setUser] = useState({});
   const [currentEvents, setCurrentEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
-  const navigation = useNavigation(); 
+  const [participantsModalVisible, setParticipantsModalVisible] = useState(false);
+  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [eventId, setEventId] = useState([]);
+  const [participantsContent, setParticipantsContent] = useState([]);
+  const [detailsContent, setDetailsContent] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
+    console.log("Token recibido:", token);
+
     if (token) {
       const decodedUser = decodeTokenManual(token);
+      console.log("Usuario decodificado:", decodedUser);
       setUser(decodedUser);
     }
-    
+
     const fetchEvents = async () => {
       try {
         const response = await eventsApi.get_Events();
@@ -51,57 +54,66 @@ const adminPage = ({ route }) => {
           const eventDate = moment(event.start_date);
           return eventDate.isBefore(currentDate, 'day');
         });
-        console.log("upcomingevents" + JSON.stringify(upcomingEvents, null,2));
+
         setCurrentEvents(upcomingEvents);
         setPastEvents(expiredEvents);
       } catch (error) {
-        console.error('Failed to fetch events:', error);
+        console.error('Error al obtener eventos:', error);
       }
     };
-    
+
     fetchEvents();
   }, [token]);
 
-
   const openModal = async (type, eventId) => {
-    console.log( "id del evento" + eventId)
+    if (!eventId) {
+      console.error("ID del evento no proporcionado");
+      return;
+    }
     try {
       if (type === 'detail') {
-        
-        const response = await eventsApi.eventDetail(eventId);
-        setModalContent({ title: 'Detalle del Evento', data: response.data });
+        const response = await eventsApi.eventDetail(token, eventId);
+        setDetailsContent(response.data);
+        setEventId(eventId);
+        setDetailsModalVisible(true);
       } else if (type === 'participants') {
-        console.log("data eventid" + eventId);
-        const response = await eventsApi.usersFromEvent(eventId);
-        setModalContent({ title: 'Participantes', data: response.data });
+        const response = await eventsApi.usersFromEvent(token, eventId);
+        const participantNames = response.data.map(participant => participant.first_name); 
+        setParticipantsContent(participantNames);
+        setParticipantsModalVisible(true);
       }
-      setModalVisible(true);
     } catch (error) {
       console.error('Error al cargar el modal:', error);
     }
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
-    setModalContent(null);
-  };
+
+  const deleteEvent = async(idEvent,idUser) =>
+  {
+    setDetailsModalVisible(false);
+    console.log("idEvento" + idEvent);
+    console.log("idUser" + idUser);
+    const response = await eventsApi.deleteEvent(token,idUser,idEvent);
+    
+  }
 
   const renderEvent = (event, isEditable) => (
     <View style={styles.eventItem}>
       <Text style={styles.eventTitle}>{event.name}</Text>
       <Text style={styles.eventDate}>{event.description}</Text>
+
       <TouchableOpacity 
         style={styles.detailButton} 
         onPress={() => openModal('detail', event.id)}>
         <Text style={styles.buttonText}>Ver Detalle</Text>
       </TouchableOpacity>
-      
+
       <TouchableOpacity 
         style={styles.participantsButton} 
         onPress={() => openModal('participants', event.id)}>
         <Text style={styles.buttonText}>Ver Participantes</Text>
       </TouchableOpacity>
-      
+
       {isEditable && (
         <TouchableOpacity 
           style={styles.editButton} 
@@ -114,8 +126,7 @@ const adminPage = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido, {user.username}!</Text>
-      <Navbar />
+
 
       <Text style={styles.sectionTitle}>Eventos Vigentes</Text>
       <FlatList
@@ -130,6 +141,63 @@ const adminPage = ({ route }) => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => renderEvent(item, false)}
       />
+
+     
+<Modal
+  visible={detailsModalVisible}
+  onRequestClose={() => setDetailsModalVisible(false)}
+  animationType="slide"
+  transparent={true}
+>
+  <View style={styles.modalBackground}>
+    <View style={styles.modalContainer}>
+      <Text style={styles.modalTitle}>Detalle del Evento</Text>
+    
+        <Text style={styles.modalBody}>
+          {JSON.stringify(detailsContent, null, 2)}
+        </Text>
+     
+
+      <TouchableOpacity 
+        onPress={() => {
+          if (eventId && user.id) {
+            deleteEvent(eventId, user.id);
+          } else {
+            console.error("Detalles del evento o ID de usuario no están disponibles");
+          }
+        }} 
+        style={styles.closeButton}>
+        <Text style={styles.buttonText}>Eliminar</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => setDetailsModalVisible(false)} style={styles.closeButton}>
+        <Text style={styles.buttonText}>Cerrar</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+    
+      <Modal
+        visible={participantsModalVisible}
+        onRequestClose={() => setParticipantsModalVisible(false)}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Participantes</Text>
+            <FlatList
+              data={participantsContent}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => <Text style={styles.modalText}>{item}</Text>}
+            />
+            <TouchableOpacity onPress={() => setParticipantsModalVisible(false)} style={styles.closeButton}>
+              <Text style={styles.buttonText}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -204,6 +272,33 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalBody: {
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  closeButton: {
+    paddingVertical: 10,
+    backgroundColor: '#dc3545',
+    borderRadius: 5,
+    alignSelf: 'center',
   },
 });
 
