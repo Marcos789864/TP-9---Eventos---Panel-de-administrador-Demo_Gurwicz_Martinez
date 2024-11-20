@@ -51,7 +51,7 @@ const adminPage = ({ route }) => {
           const eventDate = moment(event.start_date);
           return eventDate.isBefore(currentDate, 'day');
         });
-
+        console.log("upcomingevents" + JSON.stringify(upcomingEvents, null,2));
         setCurrentEvents(upcomingEvents);
         setPastEvents(expiredEvents);
       } catch (error) {
@@ -62,10 +62,46 @@ const adminPage = ({ route }) => {
     fetchEvents();
   }, [token]);
 
+
+  const openModal = async (type, eventId) => {
+    console.log( "id del evento" + eventId)
+    try {
+      if (type === 'detail') {
+        
+        const response = await eventsApi.eventDetail(eventId);
+        setModalContent({ title: 'Detalle del Evento', data: response.data });
+      } else if (type === 'participants') {
+        console.log("data eventid" + eventId);
+        const response = await eventsApi.usersFromEvent(eventId);
+        setModalContent({ title: 'Participantes', data: response.data });
+      }
+      setModalVisible(true);
+    } catch (error) {
+      console.error('Error al cargar el modal:', error);
+    }
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setModalContent(null);
+  };
+
   const renderEvent = (event, isEditable) => (
     <View style={styles.eventItem}>
       <Text style={styles.eventTitle}>{event.name}</Text>
       <Text style={styles.eventDate}>{event.description}</Text>
+      <TouchableOpacity 
+        style={styles.detailButton} 
+        onPress={() => openModal('detail', event.id)}>
+        <Text style={styles.buttonText}>Ver Detalle</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={styles.participantsButton} 
+        onPress={() => openModal('participants', event.id)}>
+        <Text style={styles.buttonText}>Ver Participantes</Text>
+      </TouchableOpacity>
+      
       {isEditable && (
         <TouchableOpacity 
           style={styles.editButton} 
@@ -144,6 +180,27 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   editButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  detailButton: {
+    marginTop: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#28a745',
+    borderRadius: 5,
+    alignSelf: 'flex-start',
+  },
+  participantsButton: {
+    marginTop: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#ffc107',
+    borderRadius: 5,
+    alignSelf: 'flex-start',
+  },
+  buttonText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',

@@ -118,16 +118,36 @@ const create_Events = async (data, token) => {
     }
   };
 
-  const eventDetail = async (token,data) => {
+  const eventDetail = async (token,idEvento) => {
     const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`,
       "ngrok-skip-browser-warning": true,  
     };
-    console.log("data" + JSON.stringify(data));
+    console.log("id Evento antes de enviar "+ idEvento);
+    const data= {};
     try {
       console.log
-      const result = await apiManager('GET', headers, data, 'event/getDetail');
+      const result = await apiManager('GET', headers, data, `event/getDetail/${idEvento}`);
+      console.log(result);
+      return result;
+    } catch (error) {
+      console.error('Error en la solicitud:', error);
+      return { error: error.message };
+    }
+  };
+
+  const usersFromEvent = async (token,idEvent) => {
+    const headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+      "ngrok-skip-browser-warning": true,  
+    };
+    console.log("id Evento antes de enviar "+ idEvent);
+    const data = {};
+    try {
+      console.log
+      const result = await apiManager('GET', headers, data, `event/${idEvent}/enrollment`);
       console.log(result);
       return result;
     } catch (error) {
@@ -139,4 +159,4 @@ const create_Events = async (data, token) => {
 
 
 
-export default { get_Events,create_Events, enrollment_event, getMaxCapacity,getAll_Events, updateEvent,eventDetail};
+export default { get_Events,create_Events, enrollment_event, getMaxCapacity,getAll_Events, updateEvent,eventDetail,usersFromEvent};
